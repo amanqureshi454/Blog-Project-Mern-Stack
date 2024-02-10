@@ -23,12 +23,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static(__dirname + '/uploads'));
 
-app.use(express.static(path.resolve(__dirname, 'frontend', 'dist')));
+// app.use(express.static(path.resolve(__dirname, 'frontend', 'dist')));
 
-// Route for serving index.html
-app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'));
-});
+// // Route for serving index.html
+// app.get('*', (req, res) => {
+//     res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'));
+// });
 
 
 
