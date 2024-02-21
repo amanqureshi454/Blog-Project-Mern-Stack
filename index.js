@@ -17,7 +17,11 @@ const editPost = require('./Controllers/editPostController');
 const tokenAuthMiddleware = require('./Controllers/auth');
 
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://blog-project-mern-stack-front-1.onrender.com',
+    methods: ['GET', 'POST', "DELETE", "UPDATE"],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 app.use("/uploads", express.static(__dirname + '/uploads'));
 
