@@ -12,24 +12,14 @@ const getAllPost = require('./Models/createPostModel');
 const Comment = require('./Models/commentModel');
 const createPostModel = require('./Models/createPostModel')
 const postComment = require('./Controllers/commentController');
-const SECRET_KEY = 'userformsdataby12'; // Replace with your actual secret key
-const jwt = require('jsonwebtoken');
 const updateProfile = require('./Controllers/updateProfileController');
 const editPost = require('./Controllers/editPostController');
-const path = require('path')
+const tokenAuthMiddleware = require('./Controllers/auth');
 
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static(__dirname + '/uploads'));
-
-// app.use(express.static(path.resolve(__dirname, 'frontend', 'dist')));
-
-// // Route for serving index.html
-// app.get('*', (req, res) => {
-//     res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'));
-// });
-
 
 
 // multer configuration for imgs / files
@@ -45,8 +35,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // db---connection
+// mongodb+srv://qureshiamanqureshi:mongodbamanatlas@cluster0.6day8ss.mongodb.net/blog
+
 mongoose
-    .connect("mongodb://localhost:27017/blog", {
+    .connect(process.env.MONGODB_URL, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })
@@ -61,7 +53,10 @@ mongoose
 
 
 // routes
-app.get('/getUser', getUser)
+app.get('/', (req, res) => {
+    res.send('Backend is Running')
+})
+app.get('/getUser', tokenAuthMiddleware, getUser)
 app.get('/getAllPost', async (req, res) => {
     try {
 
@@ -105,86 +100,29 @@ app.get('/getPost/:id', async (req, res) => {
     }
 
 })
-app.get('/getPostbyUserId', async (req, res) => {
-    const authorizationHeader = req.headers.authorization;
+app.get('/getPostbyUserId', tokenAuthMiddleware, async (req, res) => {
+
+    const userId = req.userId;
+    console.log(userId, "get postby id ");
+
     try {
-        if (!authorizationHeader) {
-            return res.status(401).json({ status: 'error', message: 'Authorization header missing' });
-        }
-
-        // Split the header to separate "Bearer" from the actual token
-        const [bearer, token] = authorizationHeader.split(' ');
-        if (bearer !== 'Bearer' || !token) {
-            return res.status(401).json({ status: 'error', message: 'Invalid Authorization header format' });
-        }
-
-        // Verify the token
-        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
-            if (err) {
-                console.error('Error decoding token:', err.message);
-                return res.status(401).json({ status: 'error', message: 'Invalid token' });
-            }
-
-            // Ensure that decoded exists and contains the expected properties
-            if (!decoded || !decoded.id) {
-                console.error('Invalid token format. Decoded:', decoded);
-                return res.status(401).json({ status: 'error', message: 'Invalid token format' });
-            }
-            // Decode contains the payload of the token, which includes the user ID
-            const userId = decoded.id;
-
-            try {
-                const postByUser = await createPostModel.find({ author: userId }).populate({ path: 'author', select: 'username profileImgURL' }).sort({ createdAt: -1 });
-                res.json({ postByUserId: postByUser });
-            } catch (err) {
-                console.error(err);
-                res.status(500).json({ error: 'Error fetching Post by UserId' });
-            }
-        });
+        const postByUser = await createPostModel.find({ author: userId }).populate({ path: 'author', select: 'username profileImgURL' }).sort({ createdAt: -1 });
+        res.json({ postByUserId: postByUser });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error handling request' });
+        res.status(500).json({ error: 'Error fetching Post by UserId' });
     }
 });
-app.get('/getComment', async (req, res) => {
-    const authorizationHeader = req.headers.authorization;
+
+app.get('/getComment', tokenAuthMiddleware, async (req, res) => {
+    const userId = req.userId;
+    console.log(userId, "get comment ");
     try {
-        if (!authorizationHeader) {
-            return res.status(401).json({ status: 'error', message: 'Authorization header missing' });
-        }
-
-        // Split the header to separate "Bearer" from the actual token
-        const [bearer, token] = authorizationHeader.split(' ');
-        if (bearer !== 'Bearer' || !token) {
-            return res.status(401).json({ status: 'error', message: 'Invalid Authorization header format' });
-        }
-
-        // Verify the token
-        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
-            if (err) {
-                console.error('Error decoding token:', err.message);
-                return res.status(401).json({ status: 'error', message: 'Invalid token' });
-            }
-
-            // Ensure that decoded exists and contains the expected properties
-            if (!decoded || !decoded.id) {
-                console.error('Invalid token format. Decoded:', decoded);
-                return res.status(401).json({ status: 'error', message: 'Invalid token format' });
-            }
-            // Decode contains the payload of the token, which includes the user ID
-            const userId = decoded.id;
-
-            try {
-                const allComment = await Comment.find({ user: userId }).populate({ path: 'user', select: 'username profileImgURL' }).sort({ createdAt: -1 });
-                res.json({ comments: allComment });
-            } catch (err) {
-                console.error(err);
-                res.status(500).json({ error: 'Error fetching comments' });
-            }
-        });
+        const allComment = await Comment.find({ user: userId }).populate({ path: 'user', select: 'username profileImgURL' }).sort({ createdAt: -1 });
+        res.json({ comments: allComment });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error handling request' });
+        res.status(500).json({ error: 'Error fetching comments' });
     }
 });
 
@@ -202,11 +140,11 @@ app.get('/getComment/:postId', async (req, res) => {
     }
 });
 
-app.post('/postComment/:postId', postComment)
+app.post('/postComment/:postId', tokenAuthMiddleware, postComment)
 app.post('/register', user)
 app.post('/login', login)
-app.post('/createpost', upload.single('file'), createPost);
-app.put('/profileUpdate', upload.single('profileImage'), updateProfile);
+app.post('/createpost', upload.single('file'), tokenAuthMiddleware, createPost);
+app.put('/profileUpdate', upload.single('profileImage'), tokenAuthMiddleware, updateProfile);
 app.put('/editPost/:id', upload.single('file'), editPost)
 app.delete('/postDelete/:id', async (req, res) => {
     const postId = req.params.id;
