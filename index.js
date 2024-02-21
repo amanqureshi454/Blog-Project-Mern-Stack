@@ -165,7 +165,7 @@ app.delete('/postDelete/:id', async (req, res) => {
     }
 })
 
-const port = 4000;
+const port = process.env.PORT;
 app.listen((port), () => {
     console.log(`Server is Running On Port ${port}`);
 })
