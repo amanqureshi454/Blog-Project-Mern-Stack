@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const User = require('../Models/userModel');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 
 
@@ -29,7 +29,7 @@ const updateProfile = async (req, res) => {
         if (bio !== undefined) user.bio = bio || user.bio;
         if (newPassword !== undefined) {
             // Hash the new password
-            const hashPassword = await bcrypt.hash(newPassword, 12);
+            const hashPassword = await bcryptjs.hash(newPassword, 12);
             user.password = hashPassword;
         }
 
