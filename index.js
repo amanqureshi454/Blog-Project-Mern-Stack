@@ -18,8 +18,8 @@ const tokenAuthMiddleware = require('./Controllers/auth');
 
 
 app.use(cors({
-    origin: 'https://blog-project-mern-stack-front-1.onrender.com',
-    methods: ['GET', 'POST', "DELETE", "UPDATE"],
+    origin: 'https://blog-project-mern-stack-front-45.onrender.com/',
+    methods: ['GET', 'POST','DELETE','PUT'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
