@@ -169,3 +169,13 @@ const port = process.env.PORT;
 app.listen((port), () => {
     console.log(`Server is Running On Port ${port}`);
 })
+// "bcryptjs": "^2.4.3",
+//     "cookie-parser": "^1.4.6",
+//     "cors": "^2.8.5",
+//     "dotenv": "^16.4.1",
+//     "express": "^4.18.2",
+//     "jsonwebtoken": "^9.0.2",
+//     "mongoose": "^8.1.1",
+//     "multer": "^1.4.5-lts.1",
+//     "path": "^0.12.7"
+//   }
