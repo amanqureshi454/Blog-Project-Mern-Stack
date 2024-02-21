@@ -19,7 +19,7 @@ const updateProfile = async (req, res) => {
 
         if (file) {
             // Handle file upload and update user's profile image URL
-            const profileImgURL = 'http://localhost:4000/uploads/' + file.filename; // Replace with actual URL or path
+            const profileImgURL = 'https://blog-project-mern-stack.onrender.com/uploads/' + file.filename; // Replace with actual URL or path
             user.profileImgURL = profileImgURL;
         }
 
